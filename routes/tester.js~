@@ -1,0 +1,6 @@
+var mongodb = require('mongojs');
+var mongoUri = 'mongodb://localhost/mydb';
+var db = mongodb.connect(mongoUri, ['highscores']);
+var cursor = db.highscores.find();
+console.log(cursor);
+console.log(cursor.next());

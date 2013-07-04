@@ -1,0 +1,47 @@
+body {
+    background-color: #444;
+    color: cyan;
+}
+
+.score, .highscore {
+    display : inline-block;
+    margin-left : auto;
+    margin-right : auto;
+}
+            
+.main {
+    position : relative;
+    left : 0px;
+    top : 0px;
+}
+
+h1, h2, h4 {
+    padding : 0px;
+    margin : 0px;
+}
+            
+audio {
+    /* stick to bottom left */
+    position : absolute;
+    left : 10px;
+    bottom : 10px;
+}
+            
+.leaderboard {
+    position : absolute; 
+    color : cyan;
+}
+.lbHead {
+
+}
+.lbColHead {
+    color : orange;
+}
+#alltimeLB {
+    left : 10px;
+    top : 10px;
+}
+#dailyLB {
+    right : 10px;
+    top : 10px;
+}

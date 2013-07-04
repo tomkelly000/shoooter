@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Shooter!</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <!-- import the BALLS! icon -->
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+        
+        <!-- import the styling template -->
+        <link rel=StyleSheet href='/gametemplate.css' type='text/css'/>
+
+        <!-- import the game logic -->
+        <script src='logic.js'></script>
+    </head>
+    <body>
+        <table id="alltimeLB" class="leaderboard">
+            <tr class='lbHead'><th colspan="3">All-Time HighScores!</th></tr>
+            <tr class='lbColHead'>
+                <th>
+                    No.
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Score
+                </th>
+            </tr>
+        </table>
+        <table id="dailyLB" class="leaderboard">
+            <tr class='lbHead'><th colspan="3">Daily HighScores</th></tr>
+            <tr class='lbColHead'>
+                <th>
+                    No.
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Score
+                </th>
+            </tr>
+        </table>
+
+        <div id="canvasContainer" style="text-align:center;">
+            <h1>Shooter!</h1>
+            <h4>Use wasd or the arrow keys to move, click to shoot, and press any key to play</h4>
+            <br>
+            <canvas id="myCanvas" width="600" height="500" >
+            </canvas>
+        
+            <br>
+            <div id="scoreContainer">
+                <h2 class="score">Score: </h2>
+                <h2 class="score" id="score">0000</h2>
+            </div>
+            <div id="highscoreContainer">
+                <h2 class="highscore">High Score: </h2>
+                <h2 class="highscore" id="highscore"></h2>
+                <script>
+                    document.getElementById("highscore")
+                            .innerHTML = padwithzeroes(getSessionHighScore());
+                </script>           
+            </div>
+        </div>
+        
+        <audio loop controls autoplay>
+                <source src="shooter.mp3" type="audio/mpeg">
+                <source src="shooter.ogg" type="audio/ogg">
+        </audio>
+
+        <!-- Will start with an empty enemy bouncing ball animation -->
+        <script>  
+            makeHighScoreTable('alltime',
+                        document.getElementById('alltimeLB'));
+            makeHighScoreTable('daily',
+                        document.getElementById('dailyLB'));
+                    
+            document.onkeydown = play;
+            startBGAnimation();
+        </script>
+    </body>
+</html>
