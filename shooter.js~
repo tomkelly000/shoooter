@@ -1,5 +1,5 @@
 var express = require('express');
-var Leaderboard = require('mongoleaderboard');
+var Leaderboard = require('../mongoleaderboard');
 var app = express();
 
 app.configure(function() {
