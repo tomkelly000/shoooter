@@ -10,6 +10,8 @@ var balls = {
         'paused' : false
     },
     'lastAdd' : 0,
+    'ballsAdded' : 0,
+    'addRate' : .9,
     'bganim' : true,
     'fr' : 17, // framerate
     'velocitymap' : [ // maps 9 possible locations for ball to move to velocities
@@ -201,10 +203,14 @@ function animate(enemies, canvas, context, time, player) {
         // update
         time += balls.fr; // framerate
 
-        document.getElementById("score").innerHTML = padwithzeroes(time)
-        if (time - balls.lastAdd > 5000) {
+        document.getElementById("score").innerHTML = padwithzeroes(time);
+
+        // time between adds goes down by 20% each time, starting at 5 seconds
+        // but asymptoting at 1 second
+        if (time - balls.lastAdd > 4000 * Math.pow(balls.addRate, balls.ballsAdded) + 1000) {
             // add a ball and reset time
             balls.lastAdd = time;
+            balls.ballsAdded++;
             enemies.push(createBall(canvas));
         }
 
@@ -272,12 +278,15 @@ function play() {
     var startTime = 0;
     // make a new empty set of enemies...
     var enemies = [];
-    // ...then fill it with ten random ball
+    // ...then fill it with ten random balls 
     for (var i = 0; i < 10; i++) {
         enemies.push(createBall(canvas));
     }
+
+    // reset these for new game
     balls.lastAdd = 0;
-                
+    balls.ballsAdded = 0;
+
     // make player
     var w = canvas.width;
     var h = canvas.height;
@@ -309,15 +318,19 @@ function pressed(event) {
     if (!event) event = window.event // browser compatibility
     switch (event.keyCode) {
     case 37: // key code for left key
+    case 65: // key code for 'a'
         balls.controls.left = true;
         break;
     case 38: // key code for up key
+    case 87: // key code for 'w'
         balls.controls.up = true;
         break;
-    case 39: // key code for right key
+    case 39: // key code for right key 
+    case 68: // key code for 'd'
         balls.controls.right = true;
         break;
-    case 40: // key code for up key
+    case 40: // key code for down key
+    case 83: // key code for 's'
         balls.controls.down = true
         break;
     case 32: // key code for space bar
@@ -330,15 +343,19 @@ function released(event) {
     if (!event) event = window.event // browser compatibility
     switch (event.keyCode) {
         case 37: // key code for left key
+        case 65: // key code for 'a'
             balls.controls.left = false
             break;
         case 38: // key code for up key
+        case 87: // key code for 'w'
             balls.controls.up = false
             break;
         case 39: // key code for right key
+        case 68: // key code for 'd'
             balls.controls.right = false
             break;
         case 40: // key code for down key
+        case 83: // key code for 's'
             balls.controls.down = false
             break;
     }
