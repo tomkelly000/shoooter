@@ -18,6 +18,7 @@ var balls = {
     'mouseX' : 0,
     'mouseY' : 0,
     'turretLength' : 12,
+    'shoot' : false,
     'fr' : 17, // framerate
     'velocitymap' : [ // maps 9 possible locations for ball to move to velocities
         // left xdir
@@ -348,6 +349,11 @@ function animate(enemies, canvas, context, score, player, bullets) {
             moveBall(enemy, canvas);
         });
 
+        if (balls.shoot) {
+            fire(player, bullets);
+            balls.shoot = false; // can't hold it down forever
+        }
+
         // move the bullets
         for (var i in bullets) {
             var b = bullets[i];
@@ -415,7 +421,7 @@ function animate(enemies, canvas, context, score, player, bullets) {
                 if (!event) event = window.event // browser compatibility
                 pressed(event) // unpauses in case of spacebar
                     // if spacebar
-                    if (event.keyCode == 32) {
+                    if (event.keyCode == 80) {
                         stopBGAnimation();
                         // restore event listeners
                         document.onkeydown = pressed;
@@ -522,8 +528,13 @@ function pressed(event) {
     case 83: // key code for 's'
         balls.controls.down = true
         break;
-    case 32: // key code for space bar
+    case 80: // key code for 'p'
         balls.controls.paused = !balls.controls.paused
+        break;
+    case 32: // key code for space bar
+        if (!balls.controls.paused && !balls.bganim) {
+            balls.shoot = true;
+        }
     }
 }
 
