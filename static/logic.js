@@ -19,6 +19,7 @@ var balls = {
     'mouseY' : 0,
     'turretLength' : 12,
     'shoot' : false,
+    'cocked' : true,
     'fr' : 17, // framerate
     'velocitymap' : [ // maps 9 possible locations for ball to move to velocities
         // left xdir
@@ -351,7 +352,8 @@ function animate(enemies, canvas, context, score, player, bullets) {
 
         if (balls.shoot) {
             fire(player, bullets);
-            balls.shoot = false; // can't hold it down forever
+            balls.shoot = false;
+            balls.cocked = false; // can't hold it down forever
         }
 
         // move the bullets
@@ -532,7 +534,7 @@ function pressed(event) {
         balls.controls.paused = !balls.controls.paused
         break;
     case 32: // key code for space bar
-        if (!balls.controls.paused && !balls.bganim) {
+        if (!balls.controls.paused && !balls.bganim && balls.cocked) {
             balls.shoot = true;
         }
     }
@@ -558,6 +560,8 @@ function released(event) {
         case 83: // key code for 's'
             balls.controls.down = false
             break;
+        case 32: // releasing space bar 'cocks' it
+            balls.cocked = true;
     }
 }
             
