@@ -13,7 +13,7 @@ var balls = {
     },
     'lastAdd' : 0,
     'ballsAdded' : 0,
-    'addRate' : .9,
+    'addRate' : .8,
     'bganim' : true,
     'mouseX' : 0,
     'mouseY' : 0,
