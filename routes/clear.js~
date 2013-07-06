@@ -17,7 +17,7 @@ function clear(app) {
 				      function() { res.end() });
 	    }
 	    if (req.query.score) {
-		db.highscores.remove( {'score':req.query.score},
+		db.highscores.remove( {'score':parseInt(req.query.score)},
 				      function() { res.end() });
 	    }
 	    // remove everything
