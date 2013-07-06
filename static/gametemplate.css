@@ -26,6 +26,18 @@ audio {
     left : 10px;
     bottom : 10px;
 }
+
+#credits {
+    /* stick to bttom right */
+    position : absolute;
+    right : 10px;
+    bottom : 0px;
+    color : white;
+}
+#credits h5, h6 {
+    padding : 0px;
+    margin : 0px;
+}
             
 .leaderboard {
     position : absolute; 
