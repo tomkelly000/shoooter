@@ -1,10 +1,10 @@
 {
-	"name": "shooter000",
+	"name": "shoooter",
 	"version": "0.0.1",
 	"author": "Tom Kelly",
 	"repository": {	
 	 "type": "git",
-	 "url": "git@heroku.com:shooter000.git"
+	 "url": "git@heroku.com:shoooter.git"
 	 },
 	"dependencies": {
 	 "express": "3.1.x",
