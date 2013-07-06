@@ -56,17 +56,19 @@
             </canvas>
         
             <br>
-            <div id="scoreContainer">
-                <h3 class="score">Score: </h3>
-                <h3 class="score" id="score">0000</h3>
-            </div>
-            <div id="highscoreContainer">
-                <h3 class="highscore">High Score: </h3>
-                <h3 class="highscore" id="highscore"></h3>
-                <script>
-                    document.getElementById("highscore")
-                            .innerHTML = padwithzeroes(getSessionHighScore());
-                </script>           
+            <div id='scoresContainer'>
+                <div id="scoreContainer">
+                    <h3 class="score">Score: </h3>
+                    <h3 class="score" id="score">0000</h3>
+                </div>
+                <div id="highscoreContainer">
+                    <h3 class="highscore">High Score: </h3>
+                    <h3 class="highscore" id="highscore"></h3>
+                    <script>
+                        document.getElementById("highscore")
+                               .innerHTML = padwithzeroes(getSessionHighScore());
+                    </script>           
+                </div>
             </div>
         </div>
         
