@@ -52,17 +52,17 @@
         <div id="canvasContainer" style="text-align:center;">
             <h2>Shooter!</h2>
             <h4>Use wasd or the arrow keys to move, and click or space bar to shoot</h4>
-            <canvas id="myCanvas" width="600" height="500" >
+            <canvas id="myCanvas" width="600" height="480" >
             </canvas>
         
             <br>
             <div id="scoreContainer">
-                <h2 class="score">Score: </h2>
-                <h2 class="score" id="score">0000</h2>
+                <h3 class="score">Score: </h3>
+                <h3 class="score" id="score">0000</h3>
             </div>
             <div id="highscoreContainer">
-                <h2 class="highscore">High Score: </h2>
-                <h2 class="highscore" id="highscore"></h2>
+                <h3 class="highscore">High Score: </h3>
+                <h3 class="highscore" id="highscore"></h3>
                 <script>
                     document.getElementById("highscore")
                             .innerHTML = padwithzeroes(getSessionHighScore());
