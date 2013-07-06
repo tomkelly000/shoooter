@@ -1,7 +1,9 @@
 // global variables
 var balls = {
-    'R' : 6,
+    'R' : 8,
+    'bullet_R' : 2,
     'speed' : 4,
+    'bullet_speed' : 10,
     'controls' : {
         'left' : false,
         'right' : false,
@@ -13,6 +15,9 @@ var balls = {
     'ballsAdded' : 0,
     'addRate' : .9,
     'bganim' : true,
+    'mouseX' : 0,
+    'mouseY' : 0,
+    'turretLength' : 12,
     'fr' : 17, // framerate
     'velocitymap' : [ // maps 9 possible locations for ball to move to velocities
         // left xdir
@@ -22,6 +27,40 @@ var balls = {
         // right xdir
         [[Math.SQRT2/2, -Math.SQRT2/2], [1, 0], [Math.SQRT2/2, Math.SQRT2/2]]
     ]
+};
+
+// configure mouse for aiming and shooting when the DOM tree is ready
+$(document).ready(function() {
+    $('#myCanvas').mousemove(aim);
+    var canvas = document.getElementById('myCanvas');
+    canvas.style.cursor = 'crosshair';
+
+    // also prevent default highlighting for double click because it is annoying
+    $('#myCanvas').dblclick(function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('#myCanvas').click(function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').mousedown(function(e) {
+        return false;
+    });
+});
+
+// helper function for getting mouse coordinates from with parent
+function getMouseCoords(parent, event) {
+    var x = event.pageX - parent.offsetLeft;
+    var y = event.pageY - parent.offsetTop;
+    return [x, y];
+}
+// event handler for mouse moving
+// sets the angle for the turret
+function aim(e) {
+    var mouse = getMouseCoords(this, e);
+    balls.mouseX = mouse[0];
+    balls.mouseY = mouse[1];   
 }
 
 // place an enemy ball somewhere randomly on the canvas
@@ -104,11 +143,17 @@ function moveBall(ball, canvas) {
         }
     }
 }
+
+// move the bullet according to its velocity
+function moveBullet(bullet, canvas) {
+    bullet.x += bullet.vx;
+    bullet.y += bullet.vy;
+}
     
 // draw a circle with color at the x, y position on context             
-function drawCircle(x, y, color, context) {
+function drawCircle(x, y, color, context, R) {
     context.beginPath();
-    context.arc(x, y, balls.R, 0, 2 * Math.PI, false);
+    context.arc(x, y, R, 0, 2 * Math.PI, false);
     context.fillStyle = color;
     context.fill();
     context.closePath();
@@ -116,19 +161,48 @@ function drawCircle(x, y, color, context) {
     context.strokeStyle = color;
     context.stroke();
 }
+
+// draw a line from x1, y1 to x2, y2 with color on context
+function drawLine(x1, y1, x2, y2, color, context) {
+    context.beginPath();
+    context.moveTo(x1, y1);
+    context.lineTo(x2, y2);
+    context.strokeStyle = color;
+    context.stroke();
+}
      
 // draw the ball on the context with color        
 function drawBall(ball, context, color) {
-    drawCircle(ball.x, ball.y, color, context)
+    drawCircle(ball.x, ball.y, color, context, balls.R)
     if (ball.xflip) {
-        drawCircle(ball.x1, ball.y, color, context);
+        drawCircle(ball.x1, ball.y, color, context, balls.R);
     }
     if (ball.yflip) {
-        drawCircle(ball.x, ball.y1, color, context);
+        drawCircle(ball.x, ball.y1, color, context, balls.R);
     }
     if (ball.xflip && ball.yflip) {
-        drawCircle(ball.x1, ball.y1, color, context);
+        drawCircle(ball.x1, ball.y1, color, context, balls.R);
     }
+}
+
+// draw the bullet on the context with color
+function drawBullet(bullet, context, color) {
+    drawCircle(bullet.x, bullet.y, color, context, balls.bullet_R);
+}
+
+// draw the turret on top of player
+function drawTurrets(player, context) {
+    var p0 = player[0];
+    player.forEach(function(p) {
+        var normturret = getNormalizedTurretOffset(p0);
+        var run = normturret[0];
+        var rise = normturret[1];
+        drawCircle(p.x - run * balls.R / 2, p.y - rise * balls.R / 2, // draw turret head on back edge of player
+                  '#111', context, balls.R / 2);
+        var turret = getTurretOffset(p0);
+        drawLine(p.x - run * balls.R /2, p.y - rise * balls.R / 2,
+                 p.x + turret[0], p.y + turret[1], 'white', context);
+    });
 }
             
 // turn integer into a string at least 4 digits long
@@ -186,6 +260,60 @@ function movePlayer(player, canvas) {
     }
 }
 
+// return true if the given coordinate is on screen, false otherwise
+function onScreen(x, y) {
+    var w = $('#myCanvas').width();
+    var h = $('#myCanvas').height();
+    return x >= 0 &&
+           x < w &&
+           y >= 0 &&
+           y < h;
+}
+
+// get the x and y coordinate of the tip of the turret where rise^2 + run^2 = 1
+// i.e. the length of the turret is 1
+function getNormalizedTurretOffset(p) {
+    var m = ((balls.mouseY - p.y) / (balls.mouseX - p.x)); // slope
+    var run = Math.sqrt(1 / (m * m + 1));
+    var rise = m * run;
+    if (p.x > balls.mouseX) {
+        run = -run;
+        rise = -rise;
+    } else if (p.x == balls.mouseX) { // slope would be undefined
+        var run = 0;
+        var rise = 1;
+    }
+    return [run, rise]
+}
+
+// return the x and y coordinate of the tip of the turret offset
+// for drawing and shooting
+function getTurretOffset(p) {
+    var turret = getNormalizedTurretOffset(p);
+    turret[0] *= balls.turretLength;
+    turret[1] *= balls.turretLength;
+    return turret;
+}
+
+// add bullets 
+function fire(player, bullets) {
+    jBeep('laser.wav');
+    var turret = getTurretOffset(player[0]); // if done for each then 
+                                        // multiple shots can be made from walls
+    player.forEach(function(p) {
+        // if the turret tip is on screen then make a bullet
+        if (onScreen(turret[0] + p.x, turret[1] + p.y)) {
+
+            bullets.push({
+                'x' : turret[0] + p.x,
+                'y' : turret[1] + p.y,
+                'vx' : turret[0] / balls.turretLength * balls.bullet_speed,
+                'vy' : turret[1] / balls.turretLength * balls.bullet_speed
+            });
+        }
+    });
+}
+
 // return euclidian distance
 function distance(x1, x2, y1, y2) {
     return Math.sqrt(Math.pow((x1 - x2), 2)
@@ -198,14 +326,15 @@ function collision(e, p) {
     return distance(e.x, p.x, e.y, p.y) < 2 * balls.R;
 }
             
-function animate(enemies, canvas, context, time, player) {
+function animate(enemies, canvas, context, score, player, bullets) {
     setTimeout(function() {
         // update
-        time += balls.fr; // framerate
+        score.time += balls.fr; // framerate
+        var time = score.time; // saves time writing score
 
-        document.getElementById("score").innerHTML = padwithzeroes(time);
+        document.getElementById("score").innerHTML = padwithzeroes(time + score.shotBonus);
 
-        // time between adds goes down by 20% each time, starting at 5 seconds
+        // time between adds goes down by the addrate each time, starting at 5 seconds
         // but asymptoting at 1 second
         if (time - balls.lastAdd > 4000 * Math.pow(balls.addRate, balls.ballsAdded) + 1000) {
             // add a ball and reset time
@@ -219,6 +348,32 @@ function animate(enemies, canvas, context, time, player) {
             moveBall(enemy, canvas);
         });
 
+        // move the bullets
+        for (var i in bullets) {
+            var b = bullets[i];
+            moveBullet(b, canvas);
+            // check to see if it hit an enemy
+            var hit = false;
+            for (var j in enemies) {
+                var e = enemies[j];
+                if (e.time < 1000) continue;
+                // it can hit more than one enemy
+                if (distance(b.x, e.x, b.y, e.y) < balls.R + balls.bullet_R) {
+                    jBeep('boom.wav');
+                    score.shotBonus += 1000;
+                    hit = true;
+                    enemies.splice(j--, 1); // decrement j since shifting left
+                }
+            }
+            // remove it if it's offscreen or if it hit an enemy
+            if (!(onScreen(b.x, b.y + balls.bullet_R) ||
+                  onScreen(b.x + balls.bullet_R, b.y) ||
+                  onScreen(b.x, b.y - balls.bullet_R) ||
+                  onScreen(b.x - balls.bullet_R, b.y)) || hit)
+                bullets.splice(i, 1); // decrement i since indices shift
+        }
+
+        // move the player
         movePlayer(player, canvas);
                 
         // clear with dark background
@@ -242,27 +397,46 @@ function animate(enemies, canvas, context, time, player) {
                 });
             }
         }); 
+        bullets.forEach(function(bullet) {
+            drawBullet(bullet, context, 'white');
+        })
                 
         player.forEach(function(p) {
-            drawBall(p, context, 'cyan');
+            drawBall(p, context, 'cyan');   
         });
+        // draw turret on top
+        drawTurrets(player, context);
                 
         if (balls.controls.paused) {
             startBGAnimation();
+            // temporarily remove event listeners
+            $('#myCanvas').trigger('holdfire');
             document.onkeydown = function(event) {
                 if (!event) event = window.event // browser compatibility
                 pressed(event) // unpauses in case of spacebar
                     // if spacebar
                     if (event.keyCode == 32) {
                         stopBGAnimation();
+                        // restore event listeners
                         document.onkeydown = pressed;
-                        animate(enemies, canvas, context, time, player);
+                        canvas.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            fire(player, bullets); // mousemove has saved aim
+                            // remove itself on pause or death
+                            var callee = arguments.callee;
+                            var self = this;
+                            $('#myCanvas').bind('holdfire', function(e) { 
+                                self.removeEventListener('click', callee);
+                            });
+                        });
+                        animate(enemies, canvas, context, score, player, bullets);
                     }
-                }
+                };
         } else if (alive) {
-            animate(enemies, canvas, context, time, player);
-        } else {                 
-            reset(time);
+            animate(enemies, canvas, context, score, player, bullets);
+        } else {    
+            jBeep('death.wav');
+            reset(time + score.shotBonus);           
         }
     }, 1000 / 60);
 }
@@ -275,10 +449,14 @@ function play() {
     context.rect(0, 0, canvas.width, canvas.height);
     context.fillStyle = '#222';
     context.fill();
-    var startTime = 0;
+    var score = {
+        'time' : 0,
+        'shotBonus' : 0
+    }
     // make a new empty set of enemies...
     var enemies = [];
     // ...then fill it with ten random balls 
+    var bullets = []; // start with no bullets
     for (var i = 0; i < 10; i++) {
         enemies.push(createBall(canvas));
     }
@@ -308,9 +486,20 @@ function play() {
     document.removeEventListener("click", play)
     document.onkeydown = pressed
     document.onkeyup =  released
+    canvas.addEventListener('click', function(e) {
+        e.preventDefault();
+        fire(player, bullets); // mousemove has saved aim
+        // remove itself on pause or death
+        var callee = arguments.callee;
+        var self = this;
+        $('#myCanvas').bind('holdfire', function(e) { 
+            self.removeEventListener('click', callee);
+        });
+    });
+
     stopBGAnimation();
     // begin!
-    animate(enemies, canvas, context, startTime, player)
+    animate(enemies, canvas, context, score, player, bullets)
 }
 
 // event handler for key press          
@@ -363,7 +552,7 @@ function released(event) {
             
 // when the player dies
 function reset(score) {
-    alert('You died!\nYour score was: ' + score)
+    alert('You died!\nYour score was: ' + score);
     balls.controls.left = false;
     balls.controls.right = false;
     balls.controls.up = false;
@@ -384,7 +573,8 @@ function reset(score) {
 
     // reset the 'press any key to play' event
     document.onkeydown = play;
-
+    // remove the click listener
+    $('#myCanvas').trigger('holdfire');
     // run the background animation in the meantime
     startBGAnimation();
 }

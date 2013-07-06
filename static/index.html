@@ -10,6 +10,12 @@
         <!-- import the styling template -->
         <link rel=StyleSheet href='/gametemplate.css' type='text/css'/>
 
+        <!-- import jQuery -->
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+        <!-- import jBeep for sounds -->
+        <script src='jBeep/jBeep.min.js'></script>
+
         <!-- import the game logic -->
         <script src='logic.js'></script>
     </head>
@@ -69,6 +75,11 @@
                 <source src="shooter.mp3" type="audio/mpeg">
                 <source src="shooter.ogg" type="audio/ogg">
         </audio>
+
+        <!-- Put credits in bottom right corner -->
+        <div id="credits">
+        </div>
+
 
         <!-- Will start with an empty enemy bouncing ball animation -->
         <script>  
